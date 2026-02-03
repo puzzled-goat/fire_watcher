@@ -1,0 +1,51 @@
+/* Toggle switch style */
+.toggle-checkbox {
+    position: relative;
+    width: 40px;
+    height: 20px;
+    -webkit-appearance: none;
+    background-color: #ccc;
+    outline: none;
+    border-radius: 9999px;
+    transition: background-color 0.3s;
+    cursor: pointer;
+}
+
+.toggle-checkbox::before {
+    content: "";
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 16px;
+    height: 16px;
+    background-color: white;
+    border-radius: 9999px;
+    transition: transform 0.3s;
+}
+
+.toggle-checkbox:checked {
+    background-color: #10b981;
+    /* Tailwind green-500 */
+}
+
+.toggle-checkbox:checked::before {
+    transform: translateX(20px);
+}
+
+/* Form inputs dark mode fix */
+input,
+select,
+textarea {
+    background-color: inherit;
+    color: inherit;
+}
+
+/* Optional: shared shadows for cards */
+.card {
+    @apply p-4 rounded shadow bg-white dark:bg-gray-800;
+}
+
+/* in common.css */
+.nav-current {
+    @apply bg-indigo-600 text-white dark:bg-indigo-500;
+}

@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Firewatcher Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Tailwind -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>tailwind.config = { darkMode: 'class' };</script>
+  <!-- Shared CSS -->
+  <link rel="stylesheet" href="/static/common.css">
+</head>
+
+<body class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-100" data-page="home">
+
+  <!-- Shared Header -->
+  <div id="header-container"></div>
+
+  <!-- Main content -->
+  <main class="max-w-7xl mx-auto px-6 py-8 grid grid-cols-1 md:grid-cols-2 gap-8">
+
+    <!-- Images Card -->
+    <section class="card flex flex-col gap-4">
+      <button id="predictBtn"
+        class="mt-4 px-4 py-2 rounded bg-indigo-500 text-white font-semibold hover:bg-indigo-600 transition">
+        Trigger Prediction
+      </button>
+      <h2 class="text-xl font-semibold">Latest Frame</h2>
+      <div>
+        <img id="latestImg" src="/tmp/fireplace_latest.jpg?ts=0" class="mt-2 rounded shadow" alt="Latest frame">
+      </div>
+    </section>
+
+    <!-- Prediction Card -->
+    <section class="card">
+      <h2 class="text-xl font-semibold mb-2">Prediction</h2>
+      <div>
+        <strong>Warped ROI:</strong>
+        <img id="warpedImg" src="/tmp/warped.jpg?ts=0" class="mt-2 rounded shadow" alt="Warped ROI">
+      </div>
+      <br>
+      <div id="result" class="min-h-[80px] p-4 rounded bg-gray-100 dark:bg-gray-700 shadow">
+        No prediction yet.
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Shared JS -->
+  <script src="/static/common.js"></script>
+  <script>
+    // --- Theme ---
+    initTheme();
+
+    // --- Load header and get toggle ---
+    (async () => {
+      const { headerToggle } = await loadHeader();
+
+      // Body doesn't need toggle in this page, but keep sync
+      const bodyToggle = null;
+
+      if (headerToggle) {
+        headerToggle.addEventListener('change', async () => {
+          await syncSchedulerToggles(headerToggle, bodyToggle, null);
+        });
+      }
+    })();
+
+    // --- Trigger prediction ---
+    document.getElementById('predictBtn').addEventListener('click', async () => {
+      try {
+        const resp = await fetch('/trigger_predict');
+        const data = await resp.json();
+        const resultDiv = document.getElementById('result');
+        resultDiv.innerHTML = `<strong>Label:</strong> ${data.label}<br>
+                               <strong>Confidence:</strong> ${(data.confidence * 100).toFixed(1)}%<br>
+                               <strong>Timestamp:</strong> ${data.timestamp}`;
+        // Reload images
+        const ts = Date.now();
+        document.getElementById('latestImg').src = `/tmp/fireplace_latest.jpg?ts=${ts}`;
+        document.getElementById('warpedImg').src = `/tmp/warped.jpg?ts=${ts}`;
+      } catch (e) { alert('Prediction failed: ' + e); }
+    });
+  </script>
+
+</body>
+
+</html>

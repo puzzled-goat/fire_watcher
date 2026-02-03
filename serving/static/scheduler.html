@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Firewatcher Scheduler</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>tailwind.config = { darkMode: 'class' };</script>
+    <link rel="stylesheet" href="/static/common.css">
+</head>
+
+<body class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-100" data-page="scheduler">
+
+    <!-- Shared Header -->
+    <div id="header-container"></div>
+
+    <main class="max-w-4xl mx-auto px-6 py-8 space-y-6">
+
+        <!-- Status Toggle -->
+        <div class="p-4 rounded shadow bg-white dark:bg-gray-800">
+            <label class="flex items-center space-x-2 cursor-pointer">
+                <span class="text-sm">Scheduler Active</span>
+                <input type="checkbox" id="body-toggle" class="toggle-checkbox" />
+            </label>
+        </div>
+
+        <!-- Configuration Form -->
+        <div class="p-4 rounded shadow bg-white dark:bg-gray-800">
+            <h2 class="text-xl font-semibold mb-2">Configure Scheduler</h2>
+            <form id="scheduler-form" class="space-y-4">
+                <div class="flex gap-4">
+                    <div class="flex-1">
+                        <label class="block text-sm font-medium mb-1">Start datetime</label>
+                        <input type="datetime-local" name="scheduler_start_datetime"
+                            class="px-2 py-1 rounded dark:bg-gray-700 dark:text-white w-full" />
+                    </div>
+                    <div class="flex-1">
+                        <label class="block text-sm font-medium mb-1">End datetime</label>
+                        <input type="datetime-local" name="scheduler_end_datetime"
+                            class="px-2 py-1 rounded dark:bg-gray-700 dark:text-white w-full" />
+                    </div>
+                </div>
+                <div class="flex gap-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Images per hour</label>
+                        <input type="number" name="images_per_hour" min="1"
+                            class="w-32 px-2 py-1 rounded dark:bg-gray-700 dark:text-white" />
+                    </div>
+                    <div class="flex-1">
+                        <label class="block text-sm font-medium mb-1">Total images for the period</label>
+                        <div id="totalImages"
+                            class="inline-block px-3 py-1 rounded-full bg-yellow-100 dark:bg-yellow-800 text-yellow-800 dark:text-yellow-100 font-medium rounded">
+                            0
+                        </div>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <button type="submit"
+                        class="px-4 py-2 rounded bg-green-500 text-white hover:bg-green-600 transition">Save</button>
+                </div>
+
+            </form>
+        </div>
+        <!-- Status -->
+        <div class="p-4 rounded shadow bg-white dark:bg-gray-800">
+            <h2 class="text-xl font-semibold mb-2">Next 5 scheduled jobs</h2>
+            <ul id="next-jobs" class="list-disc pl-5 text-gray-700 dark:text-gray-200"></ul>
+        </div>
+    </main>
+
+    <script src="/static/common.js"></script>
+    <script>
+        initTheme();
+        (async () => {
+            const { headerToggle } = await loadHeader();
+            const bodyToggle = document.getElementById("body-toggle");
+            const form = document.getElementById("scheduler-form");
+
+            async function refreshStatus() {
+                const res = await fetch("/scheduler/config");
+                const data = await res.json();
+                bodyToggle.checked = data.active;
+                headerToggle.checked = data.active;
+
+                const nextJobsElem = document.getElementById("next-jobs");
+                nextJobsElem.innerHTML = "";
+                const jobs = data.next_jobs.slice(0, 5);
+                if (!jobs.length) nextJobsElem.textContent = "No jobs scheduled";
+                else jobs.forEach(job => {
+                    const li = document.createElement("li");
+                    li.textContent = job;
+                    nextJobsElem.appendChild(li);
+                });
+
+                form.images_per_hour.value = data.images_per_hour;
+                form.scheduler_start_datetime.value = data.scheduler_start_datetime;
+                form.scheduler_end_datetime.value = data.scheduler_end_datetime;
+
+                form.scheduler_end_datetime.value = data.scheduler_end_datetime;
+            }
+
+            async function toggleScheduler(newState) {
+                const formData = new FormData(form);
+                formData.append("toggle_active", newState ? "true" : "false");
+                await fetch("/scheduler/config", { method: "POST", body: formData });
+                await refreshStatus();
+            }
+
+            [headerToggle, bodyToggle].forEach(t => {
+                t.addEventListener("change", async e => { await toggleScheduler(e.target.checked); });
+            });
+
+            form.addEventListener("submit", async e => {
+                e.preventDefault();
+                await toggleScheduler(bodyToggle.checked);
+            });
+
+            await refreshStatus();
+        })();
+
+        function updateTotalImages() {
+            const imagesPerHour = parseFloat(document.querySelector("input[name='images_per_hour']").value) || 0;
+            const startDateTimeStr = document.querySelector("input[name='scheduler_start_datetime']").value;
+            const endDateTimeStr = document.querySelector("input[name='scheduler_end_datetime']").value;
+
+            if (!startDateTimeStr || !endDateTimeStr) {
+                document.getElementById("totalImages").textContent = "0";
+                return;
+            }
+
+            const startDateTime = new Date(startDateTimeStr);
+            const endDateTime = new Date(endDateTimeStr);
+
+            let durationHours = (endDateTime - startDateTime) / 1000 / 3600;
+            if (durationHours < 0) durationHours = 0;
+
+            const totalImages = Math.round(imagesPerHour * durationHours);
+            document.getElementById("totalImages").textContent = totalImages;
+        }
+        const inputs = [
+            document.querySelector("input[name='images_per_hour']"),
+            document.querySelector("input[name='scheduler_start_datetime']"),
+            document.querySelector("input[name='scheduler_end_datetime']")
+        ];
+
+        inputs.forEach(el => el.addEventListener("input", updateTotalImages));
+        updateTotalImages(); // initialize
+
+
+    </script>
+
+</body>
+
+</html>

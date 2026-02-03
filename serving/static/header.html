@@ -1,0 +1,51 @@
+<header class="bg-white dark:bg-gray-800 shadow sticky top-0 z-10">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex flex-wrap justify-between items-center">
+        <h1 class="text-2xl font-bold tracking-tight mr-4">
+            <a href="/home" class="hover:underline">🔥 Firewatcher</a>
+        </h1>
+
+        <!-- Hamburger for small screens -->
+        <button id="menu-toggle"
+            class="sm:hidden p-2 rounded bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition">
+            ☰
+        </button>
+
+        <div id="nav-links" class="flex flex-wrap items-center space-x-2 w-full sm:w-auto sm:flex">
+            <a href="/home"
+                class="px-3 py-2 rounded text-sm font-semibold transition hover:bg-gray-200 dark:hover:bg-gray-700">Home</a>
+            <a href="/update"
+                class="px-3 py-2 rounded text-sm font-semibold transition hover:bg-gray-200 dark:hover:bg-gray-700">Update</a>
+            <a href="/scheduler"
+                class="px-3 py-2 rounded text-sm font-semibold transition hover:bg-gray-200 dark:hover:bg-gray-700">Scheduler</a>
+            <a href="http://localhost:8000/docs" target="_blank"
+                class="px-3 py-2 rounded text-sm font-semibold transition hover:bg-gray-200 dark:hover:bg-gray-700">Docs</a>
+
+
+            <!-- Theme toggle -->
+            <button id="theme-toggle"
+                class="p-2 rounded bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition">🌙/☀️</button>
+
+            <!-- Scheduler toggle -->
+            <label class="flex items-center space-x-2 cursor-pointer">
+                <span class="text-sm">Scheduler</span>
+                <input type="checkbox" id="header-toggle" class="toggle-checkbox" />
+            </label>
+        </div>
+    </div>
+</header>
+
+<script>
+    const menuToggle = document.getElementById("menu-toggle");
+    const navLinks = document.getElementById("nav-links");
+
+    menuToggle.addEventListener("click", () => {
+        navLinks.classList.toggle("hidden");
+    });
+
+    // Theme
+    if (localStorage.getItem("theme") === "dark") document.documentElement.classList.add("dark");
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        document.documentElement.classList.toggle("dark");
+        localStorage.setItem("theme", document.documentElement.classList.contains("dark") ? "dark" : "light");
+    });
+</script>

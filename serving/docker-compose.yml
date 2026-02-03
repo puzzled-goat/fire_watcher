@@ -1,0 +1,16 @@
+services:
+  firewatcher:
+    image: firewatcher:local
+    container_name: firewatcher
+    restart: always
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./tmp:/app/tmp
+      - ./models:/app/models
+      - ./static:/app/static
+      - ${IMG_FOLDER_PATH}:/data/fire_watcher/img
+    environment:
+      TZ: UTC
+    env_file:
+      - .env

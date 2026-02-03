@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>Firewatcher Polygon Editor</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>tailwind.config = { darkMode: 'class' };</script>
+  <link rel="stylesheet" href="/static/common.css">
+</head>
+
+<body class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-100" data-page="update">
+
+  <!-- Shared Header -->
+  <div id="header-container"></div>
+
+  <main class="max-w-4xl mx-auto px-6 py-8">
+    <section class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+      <h2 class="text-xl font-semibold mb-4">Click the 4 corners of the fireplace</h2>
+      <div id="canvas-wrapper"
+        class="w-full overflow-x-auto rounded shadow transition-[box-shadow] duration-500 ease-out">
+        <canvas id="fireplaceCanvas" class="rounded w-full max-w-full"></canvas>
+      </div>
+      <div class="mt-4 space-x-2">
+        <button id="saveBtn"
+          class="px-4 py-2 rounded bg-green-500 text-white font-semibold hover:bg-green-600 transition">Save
+          Polygon</button>
+        <button id="resetBtn"
+          class="px-4 py-2 rounded bg-gray-400 text-white font-semibold hover:bg-gray-500 transition">Reset</button>
+      </div>
+    </section>
+  </main>
+
+  <script src="/static/common.js"></script>
+  <script>
+    initTheme();
+
+    (async () => {
+      const { headerToggle } = await loadHeader();
+
+      const canvas = document.getElementById('fireplaceCanvas');
+      const ctx = canvas.getContext('2d');
+      let points = [];
+      const img = new Image();
+      img.src = '/tmp/fireplace_latest.jpg?ts=' + Date.now();
+      img.onload = () => {
+        canvas.width = img.width;
+        canvas.height = img.height;
+        drawPoints();
+      };
+
+      function drawPoints() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(img, 0, 0);
+        if (points.length === 0) return;
+        ctx.fillStyle = 'red';
+        points.forEach(p => ctx.fillRect(p[0] - 3, p[1] - 3, 6, 6));
+        if (points.length === 4) {
+          ctx.beginPath();
+          ctx.moveTo(points[0][0], points[0][1]);
+          for (let i = 1; i < 4; i++) ctx.lineTo(points[i][0], points[i][1]);
+          ctx.closePath();
+          ctx.strokeStyle = 'yellow';
+          ctx.lineWidth = 2;
+          ctx.stroke();
+        }
+      }
+      function getMousePos(e) {
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+        return [(e.clientX - rect.left) * scaleX, (e.clientY - rect.top) * scaleY];
+      }
+      canvas.addEventListener('click', e => {
+        if (points.length >= 4) return;
+        points.push(getMousePos(e));
+        drawPoints();
+      });
+
+      let draggedPointIndex = null;
+
+      canvas.addEventListener('mousedown', e => {
+        const [x, y] = getMousePos(e);
+        draggedPointIndex = points.findIndex(p => Math.hypot(p[0] - x, p[1] - y) < 6);
+      });
+
+      canvas.addEventListener('mousemove', e => {
+        const [x, y] = getMousePos(e);
+        canvas.style.cursor = points.some(p => Math.hypot(p[0] - x, p[1] - y) < 6) ? 'grab' : 'default';
+        if (draggedPointIndex !== null) { points[draggedPointIndex] = [x, y]; drawPoints(); canvas.style.cursor = 'grabbing'; }
+      });
+
+      canvas.addEventListener('mouseup', () => draggedPointIndex = null);
+      canvas.addEventListener('mouseleave', () => draggedPointIndex = null);
+
+      const wrapper = document.getElementById('canvas-wrapper');
+      function glowSuccess() {
+        wrapper.style.boxShadow = '0 0 7px 10px rgba(34,197,94,0.85)';
+        setTimeout(() => wrapper.style.boxShadow = '', 1200);
+      }
+      function glowError() {
+        wrapper.style.boxShadow = '0 0 7px 10px rgba(239,68,68,0.85)';
+        setTimeout(() => wrapper.style.boxShadow = '', 1200);
+      }
+
+      document.getElementById('saveBtn').addEventListener('click', async () => {
+        if (points.length !== 4) { glowError(); return; }
+        try {
+          const resp = await fetch('/update_polygon', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ polygon: points })
+          });
+          if (!resp.ok) { glowError(); return; }
+          points = []; drawPoints(); glowSuccess();
+        } catch (e) { glowError(); }
+      });
+
+      document.getElementById('resetBtn').addEventListener('click', () => { points = []; drawPoints(); });
+    })();
+  </script>
+
+</body>
+
+</html>
