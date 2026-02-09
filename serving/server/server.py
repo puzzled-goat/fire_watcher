@@ -37,9 +37,9 @@ from constants import (
     RANSAC_REPROJ_THRESHOLD,
     STREAM_URL,
 )
-from scheduler_service import CaptureScheduler
+from fire_detector.serving.server.scheduler_service import CaptureScheduler
 from schemas import CaptureConfig
-from utils_image import *
+from fire_detector.serving.server.server_lib import *
 
 
 class PolygonUpdate(BaseModel):

@@ -8,7 +8,7 @@ from loguru import logger
 
 from constants import CONFIG_PATH, IMG_FOLDER_PATH, STREAM_URL
 from schemas import CaptureConfig
-from utils_image import capture_image_from_stream
+from fire_detector.serving.server.server_lib import capture_image_from_stream
 
 
 class CaptureScheduler:

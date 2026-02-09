@@ -1,4 +1,6 @@
 # Firewatcher
+![test](assets/project_image.png)
+
 ## Overview
 
 **Firewatcher** is a proof-of-concept (POC) system designed to detect and categorize the amount of flame in a fireplace.
@@ -137,6 +139,6 @@ sensor:
 result
 
 > ## Fireplace Overview  
-> Last update: 2026-01-01T20:00:00.0000
+> Last update: 2026-01-02T15:45:00.0000  
 > Prediction class: medium flames  
-> Confidence: 0.89  
+> Confidence: 0.56

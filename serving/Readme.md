@@ -1,4 +1,13 @@
 ## Serving
+### Serve locally
+
+```bash
+poetry env activate
+poetry install
+
+make serve
+```
+
 ### Fireplace Detection & Tracking
 - The fireplace region is represented by a **4-point polygon**
 - The polygon is manually editable through a web UI if the camera is moved
@@ -47,32 +56,3 @@ Features:
 ### /scheduler
 - used to organise data collection
 
-### Serving file structure (Simplified)
-```
-fire_detector/
-  └─serving/
-    ├─constant.py
-    ├─docker-compose.yaml
-    ├─dockerfile
-    ├─Makefile
-    ├─poetry.lock
-    ├─pyproject.toml
-    ├─scheduler.py        # functions for scheduler
-    ├─server.py           # Single-file FastAPI server
-    ├─utils_image.py      # dump of all common functions
-    ├─models/
-    |   └─ random_forest_v1.0.joblib  # classifier
-    ├─static/
-    |   ├─ common.css
-    |   ├─ common.js
-    |   ├─ header.html        # common header
-    |   ├─ home.html          # prediction UI
-    |   ├─ scheduler.html     # to schedule data collection
-    |   └─ update.html        # UI to update polygon
-    └─tmp/
-        ├─ fireplace_latest.jpg         # Latest captured frame
-        ├─ fireplace_latest.log         # log of latest image saved
-        ├─ fireplace_polygon.json       # last polygon saved
-        ├─ scheduler_config.json        # configuration of next data collection
-        └─ warped.jpg                   # Last warped ROI used for prediction
-```
