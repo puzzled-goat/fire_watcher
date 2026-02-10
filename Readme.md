@@ -48,20 +48,11 @@ OUTPUT_DIR_SCREENSHOT=/your/image/path
 ```
 
 ### 3. Build and run with Makefile
-The Makefile provides commands to handle Docker image building and deployment:
 
-Build the Docker image locally
-```bash
-make build
-```
-
-Save the image as a tarball
-```bash
-make save
-```
 ### 4. Deploy
 #### Option 1 - Deploy on remote host
-Deploy to remote host
+The Makefile provides commands to handle Docker image building and deployment.
+Build the Docker image locally + Save the image as a tarball + Deploy to remote host
 ```bash
 make deploy
 ```
@@ -78,14 +69,18 @@ make logs
 ```
 
 #### Option 2 - Deploy Locally
-
 If you are deploying on the **same machine**, you don’t need `VM_USER`, `VM_HOST`, or `VM_PATH`. You can run the container directly with Docker Compose.
 
 1. Make sure the `.env` file exists with at least:
 ```env
 OUTPUT_DIR_SCREENSHOT=/your/image/path
 ```
-2. Start the container
+2. (run only the first time)
+```bash
+make build
+```
+
+3. Start the container
 ```bash
 docker-compose up -d
 ```

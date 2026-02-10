@@ -28,7 +28,7 @@
       </button>
       <h2 class="text-xl font-semibold">Latest Frame</h2>
       <div>
-        <img id="latestImg" src="/tmp/fireplace_latest.jpg?ts=0" class="mt-2 rounded shadow" alt="Latest frame">
+        <img id="latestImg" src="/runtime/fireplace_latest.jpg?ts=0" class="mt-2 rounded shadow" alt="Latest frame">
       </div>
     </section>
 
@@ -37,7 +37,7 @@
       <h2 class="text-xl font-semibold mb-2">Prediction</h2>
       <div>
         <strong>Warped ROI:</strong>
-        <img id="warpedImg" src="/tmp/warped.jpg?ts=0" class="mt-2 rounded shadow" alt="Warped ROI">
+        <img id="warpedImg" src="/runtime/fireplace_latest_warped.jpg?ts=0" class="mt-2 rounded shadow" alt="Warped ROI">
       </div>
       <br>
       <div id="result" class="min-h-[80px] p-4 rounded bg-gray-100 dark:bg-gray-700 shadow">
@@ -78,8 +78,8 @@
                                <strong>Timestamp:</strong> ${data.timestamp}`;
         // Reload images
         const ts = Date.now();
-        document.getElementById('latestImg').src = `/tmp/fireplace_latest.jpg?ts=${ts}`;
-        document.getElementById('warpedImg').src = `/tmp/warped.jpg?ts=${ts}`;
+        document.getElementById('latestImg').src = `/runtime/fireplace_latest.jpg?ts=${ts}`;
+        document.getElementById('warpedImg').src = `/runtime/fireplace_latest_warped.jpg?ts=${ts}`;
       } catch (e) { alert('Prediction failed: ' + e); }
     });
   </script>

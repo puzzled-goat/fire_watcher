@@ -4,11 +4,10 @@ from datetime import datetime, timezone
 
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.interval import IntervalTrigger
+from server.constants import CONFIG_PATH, IMG_FOLDER_PATH, STREAM_URL
+from server.server_lib import capture_image_from_stream
 from loguru import logger
-
-from constants import CONFIG_PATH, IMG_FOLDER_PATH, STREAM_URL
-from schemas import CaptureConfig
-from fire_detector.serving.server.server_lib import capture_image_from_stream
+from server.schemas import CaptureConfig
 
 
 class CaptureScheduler:

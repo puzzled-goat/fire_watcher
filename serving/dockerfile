@@ -24,4 +24,4 @@ USER appuser
 
 EXPOSE 8000
 
-ENTRYPOINT ["sh", "-c", "poetry install --no-root --only main && poetry run uvicorn server:app --host 0.0.0.0 --port 8000"]
+ENTRYPOINT ["sh", "-c", "poetry install --no-root --only main && poetry run uvicorn server.server:app --host 0.0.0.0 --port 8000"]

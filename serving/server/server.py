@@ -1,5 +1,4 @@
 import json
-import os
 
 from dotenv import load_dotenv
 
@@ -14,48 +13,52 @@ import numpy as np
 from fastapi import FastAPI, File, Form, UploadFile
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
-from loguru import logger
-from pydantic import BaseModel
-
-from constants import (
+from server.constants import (
     BLACK_MEAN_THRESHOLD,
     BLACK_PIXEL_RATIO,
     BLACK_PIXEL_THRESHOLD,
     FIREPLACE_POLY_INIT,
     HOT_PIXEL_V_THRESHOLD,
-    LATEST_FRAME_LOG,
-    LATEST_FRAME_PATH,
     MAX_TRANSLATION_PX,
     MIN_INLIERS,
     MIN_KEYPOINTS,
     MIN_MATCHES,
-    MODEL_PATH,
     N_BANDS,
     OUTPUT_SIZE,
     POLY_SMOOTHING_ALPHA,
-    POLYGON_PATH,
     RANSAC_REPROJ_THRESHOLD,
     STREAM_URL,
+    POLYGON_PATH,
+    LATEST_FRAME_PATH,
+    LATEST_FRAME_LOG_PATH,
+    BASE_DIR,
+    RUNTIME_DIR,
+    MODEL_PATH,
+    HOME_HTML_PATH,
+    UPDATE_POLYGONE_HTML_PATH,
+    SCHEDULER_HTML_PATH,
+    LATEST_FRAME_WARPED_PATH
 )
-from fire_detector.serving.server.scheduler_service import CaptureScheduler
-from schemas import CaptureConfig
-from fire_detector.serving.server.server_lib import *
+from server.scheduler_service import CaptureScheduler
+from server.schemas import CaptureConfig
+from server.server_lib import (
+    capture_image_from_stream,
+    init_fireplace_state,
+    load_image_from_upload,
+    predict_from_image,
+)
+from loguru import logger
+from pydantic import BaseModel
 
 
 class PolygonUpdate(BaseModel):
     polygon: List[List[float]]
 
-
-os.makedirs("tmp", exist_ok=True)
-logger.add(LATEST_FRAME_LOG, rotation="1 MB", retention=5)
+logger.add(LATEST_FRAME_LOG_PATH, rotation="1 MB", retention=5)
 
 app = FastAPI(title="Fireplace Flame Detector")
-app.mount("/static", StaticFiles(directory="static"), name="static")
-app.mount("/tmp", StaticFiles(directory="tmp"), name="tmp")
-
-HOME_HTML_PATH = Path("static/home.html")
-UPDATE_POLYGONE_HTML_PATH = Path("static/update.html")
-
+app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
+app.mount("/runtime", StaticFiles(directory=RUNTIME_DIR), name="runtime")
 
 @app.on_event("startup")
 def startup_event():
@@ -70,8 +73,6 @@ def startup_event():
 
     # Load saved polygon if exists
     if Path(POLYGON_PATH).exists():
-        import json
-
         with open(POLYGON_PATH) as f:
             poly = json.load(f)
             if len(poly) == 4:
@@ -131,6 +132,7 @@ async def predict(file: UploadFile = File(...)):
         output_size=OUTPUT_SIZE,
         n_bands=N_BANDS,
         hot_pixel_v_threshold=HOT_PIXEL_V_THRESHOLD,
+        warp_file_path=LATEST_FRAME_WARPED_PATH,
     )
 
     app.state.fireplace.update(updated_state)
@@ -166,6 +168,7 @@ def trigger_predict():
         output_size=OUTPUT_SIZE,
         n_bands=N_BANDS,
         hot_pixel_v_threshold=HOT_PIXEL_V_THRESHOLD,
+        warp_file_path=LATEST_FRAME_WARPED_PATH,
     )
 
     app.state.fireplace.update(updated_state)
@@ -190,7 +193,7 @@ def update_polygon(update: PolygonUpdate):
 
 @app.get("/scheduler", response_class=HTMLResponse)
 def serve_scheduler():
-    return FileResponse("static/scheduler.html")
+    return FileResponse(SCHEDULER_HTML_PATH)
 
 
 def get_next_scheduler_jobs(n: int = 5):

@@ -1,5 +1,5 @@
 import os
-
+from pathlib import Path
 import numpy as np
 
 IMAGE_WIDTH = 640
@@ -22,26 +22,35 @@ MAX_TRANSLATION_PX = 25
 POLY_SPACE = "pixel"
 POLY_SMOOTHING_ALPHA = 0.9
 
+# init
 FIREPLACE_POLY_INIT = np.array(
     [[270, 205], [373, 217], [370, 270], [270, 255]], dtype=np.float32
 )
 
-MODEL_PATH = "models/random_forest_v1.1.joblib"
-
 CLASS_LABELS = ["large flames", "black", "medium flames", "ember", "small flames"]
-
-DEBUG_SAVE_FRAMES = True
-DEBUG_OUTPUT_DIR = "tmp/fireplace_debug"
-LATEST_FRAME_PATH = "tmp/fireplace_latest.jpg"
-LATEST_FRAME_LOG = "tmp/fireplace_latest.log"
 
 N_BANDS = 3
 HOT_PIXEL_V_THRESHOLD = 200
 OUTPUT_SIZE = 256
 
 STREAM_URL = os.getenv("STREAM_URL")
-
-POLYGON_PATH = "tmp/fireplace_polygon.json"
-
 IMG_FOLDER_PATH = os.getenv("IMG_FOLDER_PATH")
-CONFIG_PATH = "tmp/scheduler_config.json"
+
+SCHEDULER_CONFIG_FILE = "scheduler_config.json"
+POLYGON_FILE = "fireplace_polygon.json"
+LATEST_FRAME_FILE = "fireplace_latest.jpg"
+LATEST_FRAME_WARPED_FILE = "fireplace_latest_warped.jpg"
+LATEST_FRAME_LOG_FILE = "fireplace_latest.log"
+
+BASE_DIR = Path(__file__).resolve().parent
+RUNTIME_DIR = BASE_DIR / "runtime"
+POLYGON_PATH = RUNTIME_DIR / POLYGON_FILE
+CONFIG_PATH = RUNTIME_DIR / SCHEDULER_CONFIG_FILE
+LATEST_FRAME_PATH = RUNTIME_DIR / LATEST_FRAME_FILE
+LATEST_FRAME_WARPED_PATH = RUNTIME_DIR / LATEST_FRAME_WARPED_FILE
+LATEST_FRAME_LOG_PATH = RUNTIME_DIR / LATEST_FRAME_LOG_FILE
+
+MODEL_PATH = Path("./models") / os.getenv("MODEL")
+HOME_HTML_PATH = Path(BASE_DIR / "static/home.html")
+UPDATE_POLYGONE_HTML_PATH = Path(BASE_DIR / "static/update.html")
+SCHEDULER_HTML_PATH = Path(BASE_DIR / "static/scheduler.html")

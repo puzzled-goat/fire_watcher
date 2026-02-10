@@ -220,5 +220,6 @@ archive/
 training/labels/
 training/latent_assets/
 training/models
-runtime/scheduler*
-runtime/fireplace*
+serving/server/runtime/scheduler*
+serving/server/runtime/fireplace*
+serving/server/runtime/fireplace*

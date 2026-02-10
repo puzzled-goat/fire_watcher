@@ -30,19 +30,16 @@ save: build
 	@echo "==> Saving image..."
 	docker save $(IMAGE) | gzip > $(ARCHIVE)
 
+deploy_local: 
+	make build && docker compose up -d && docker logs -f firewatcher
+
 # One-command deploy + run on LXC
 deploy: save
 	@echo "==> Transferring Firewatcher to $(VM_HOST) ..."
-	# create folders on host
-	ssh $(VM_USER)@$(VM_HOST) "mkdir -p $(VM_PATH)/tmp $(VM_PATH)/models $(VM_PATH)/static"
-
-	# copy local models and static to host
-	scp -r models/* $(VM_USER)@$(VM_HOST):$(VM_PATH)/models/
-	scp -r static/* $(VM_USER)@$(VM_HOST):$(VM_PATH)/static/
 	scp .env $(VM_USER)@$(VM_HOST):$(VM_PATH)/
 
 	# set permissions on host
-	ssh $(VM_USER)@$(VM_HOST) "chown -R 1000:1000 $(VM_PATH)/tmp $(VM_PATH)/models $(VM_PATH)/static $(IMG_FOLDER_PATH)"
+	ssh $(VM_USER)@$(VM_HOST) "chown -R 1000:1000 $(VM_PATH) $(IMG_FOLDER_PATH)"
 
 	scp $(ARCHIVE) $(VM_USER)@$(VM_HOST):$(VM_PATH)/
 	scp docker-compose.yml $(VM_USER)@$(VM_HOST):$(VM_PATH)/
@@ -64,6 +61,8 @@ deploy: save
 logs:
 	ssh $(VM_USER)@$(VM_HOST) "docker logs -f firewatcher"
 
+logs_local:
+
 # Cleanup
 clean:
 	-docker rmi $(IMAGE)
@@ -73,4 +72,4 @@ fmt:
 	black . && isort .
 
 serve:
-	uvicorn server:app --host 0.0.0.0 --port 8000 --reload
+	uvicorn server.server:app --host 0.0.0.0 --port 8000 --reload

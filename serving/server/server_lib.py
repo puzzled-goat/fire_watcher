@@ -7,6 +7,7 @@ import numpy as np
 from fastapi import UploadFile
 from loguru import logger
 from skimage.feature import canny
+from pathlib import Path
 
 
 def load_image(path: str) -> np.ndarray:
@@ -452,6 +453,7 @@ def predict_from_image(
     output_size: Tuple[int, int],
     n_bands: int,
     hot_pixel_v_threshold: float,
+    warp_file_path:Path,
 ) -> Tuple[Dict[str, Any], Dict[str, Any]]:
 
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
@@ -477,25 +479,9 @@ def predict_from_image(
             },
         )
 
-    # if ref_gray is None:
-    #     ref_gray, ref_kp, ref_des = init_reference(gray, orb)
-
-    # last_polygon, orb_ok = update_polygon_with_orb(
-    #     gray=gray,
-    #     last_polygon=last_polygon,
-    #     orb=orb,
-    #     ref_kp=ref_kp,
-    #     ref_des=ref_des,
-    #     min_keypoints=min_keypoints,
-    #     min_matches=min_matches,
-    #     ransac_reproj_threshold=ransac_reproj_threshold,
-    #     min_inliers=min_inliers,
-    #     max_translation_px=max_translation_px,
-    #     smoothing_alpha=poly_smoothing_alpha,
-    # )
 
     warped = warp_polygon_to_square(img, last_polygon, output_size)
-    save_frame_to_path(warped, "tmp/warped.jpg")
+    save_frame_to_path(warped, warp_file_path)
 
     features = extract_features(
         warped,
