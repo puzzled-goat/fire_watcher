@@ -220,3 +220,5 @@ archive/
 training/labels/
 training/latent_assets/
 training/models
+runtime/scheduler*
+runtime/fireplace*
