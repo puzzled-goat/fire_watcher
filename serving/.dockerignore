@@ -8,3 +8,6 @@ __pycache__/
 .poetry
 venv/
 firewatcher.tar.gz
+.jpg
+.log
+.json

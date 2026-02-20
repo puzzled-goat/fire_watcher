@@ -61,8 +61,6 @@ deploy: save
 logs:
 	ssh $(VM_USER)@$(VM_HOST) "docker logs -f firewatcher"
 
-logs_local:
-
 # Cleanup
 clean:
 	-docker rmi $(IMAGE)
