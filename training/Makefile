@@ -1,5 +1,5 @@
 fmt:
 	black . && isort .
 
-viz2:
-	python app_dash.py
+dash:
+	python dashboard/app_dash.py
