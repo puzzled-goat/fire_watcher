@@ -520,3 +520,110 @@ def predict_from_image(
             "ref_des": ref_des,
         },
     )
+
+
+## auto bbox
+import json
+from pathlib import Path
+from typing import Any, Dict
+
+from PIL import Image
+
+from constants import IMAGE_DIR_PATH
+
+
+def auto_label(
+    image_dir_path: Path = IMAGE_DIR_PATH,
+    coco_annotation_path: Path = Path("fire_watcher-1.json"),
+    output_path: Path = Path("auto_annotations_fire_watcher-1.json"),
+) -> Dict[str, Any]:
+    """
+    Automatically generate bounding box annotations for images in a directory
+    based on existing COCO-style annotations, filling in missing images with
+    the previous bounding box if available.
+
+    Args:
+        image_dir_path (Path): Path to the directory containing image files.
+        coco_annotation_path (Path): Path to the COCO JSON annotation file.
+        output_path (Path): Path to save the generated auto_annotations JSON.
+
+    Returns:
+        Dict[str, Any]: Dictionary mapping image filenames to their annotations,
+                        including 'bbox' and 'labeled' status.
+    """
+    coco_annotations = json.loads(coco_annotation_path.read_text())
+
+    coco_annotations_dict = {}
+    for image in coco_annotations.get("images", []):
+        file_name = image.get("file_name")
+        image_id = image.get("id")
+        # Find matching annotation
+        bbox = None
+        for annotation in coco_annotations.get("annotations", []):
+            if annotation.get("image_id") == image_id:
+                bbox = annotation.get("bbox")
+                break
+        coco_annotations_dict[file_name] = {"id": image_id, "bbox": bbox}
+
+    file_paths = [
+        p
+        for p in image_dir_path.iterdir()
+        if p.is_file() and p.suffix.lower() in {".jpg", ".jpeg", ".png"}
+    ]
+    file_paths.sort()
+
+    # Generate auto annotations
+    auto_annotations_dict = {}
+    previous_bbox = None
+    for file_path in file_paths:
+        file_name = file_path.name
+        auto_annotations_dict[file_name] = {"labeled": False, "bbox": None}
+
+        if file_name in coco_annotations_dict:
+            previous_bbox = coco_annotations_dict[file_name]["bbox"]
+            auto_annotations_dict[file_name]["labeled"] = True
+
+        auto_annotations_dict[file_name]["bbox"] = previous_bbox
+
+    with open(output_path, "w") as f:
+        json.dump(auto_annotations_dict, f, indent=4)
+
+    return auto_annotations_dict
+
+
+def save_bboxes(
+    image_dir_path: Path = IMAGE_DIR_PATH,
+    annotations_path: Path = Path("auto_annotations_fire_watcher-1.json"),
+    output_dir: Path = Path("test_bbox"),
+):
+    """
+    Crop each image in image_dir_path using bounding boxes from a JSON annotation file
+    and save the cropped region into output_dir with the same filename.
+
+    Args:
+        image_dir_path (Path): Path to the directory containing original images.
+        annotations_path (Path): Path to the JSON file with 'bbox' info.
+        output_dir (Path): Path to save cropped images. Created if it doesn't exist.
+    """
+    annotations = json.loads(annotations_path.read_text())
+
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    for file_name, data in annotations.items():
+        bbox = data.get("bbox")
+        if bbox is None:
+            # Skip images without bbox
+            continue
+
+        img_path = image_dir_path / file_name
+        if not img_path.is_file():
+            print(f"Image not found: {img_path}")
+            continue
+
+        with Image.open(img_path) as img:
+            # COCO bbox format: [x, y, width, height]
+            x, y, w, h = bbox
+            cropped_img = img.crop((x, y, x + w, y + h))
+
+            output_path = output_dir / file_name
+            cropped_img.save(output_path)
