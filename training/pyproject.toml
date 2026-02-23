@@ -1,0 +1,42 @@
+[tool.poetry]
+name = "fire-detector-training"
+version = "0.1.0"
+description = "Model training for fire detector"
+authors = ["Etienne"]
+package-mode = false 
+
+[tool.poetry.dependencies]
+python = "^3.12"
+fastapi = "^0.110.0"
+uvicorn = "^0.29.0"
+pillow = "^10.2.0"
+httpx = "^0.28.1"
+pandas = "^2.3.1"
+pydantic = "^2.11.7"
+loguru = "^0.7.3"
+opencv-python-headless = "^4.12.0"
+python-dotenv = "^1.1.1"
+scikit-learn = "^1.7.1"
+joblib = "^1.5.1"
+matplotlib = "^3.10.3"
+ipykernel = "^6.29.5"
+numpy = "*"
+scikit-image = "*"
+python-multipart = "^0.0.21"
+requests = "^2.32.5"
+apscheduler = "^3.11.2"
+sqlalchemy = "^2.0.45"
+torchinfo = "^1.8.0"
+plotly = "^6.5.2"
+dash = "^3.4.0"
+
+[tool.poetry.group.dev.dependencies]
+black = "^24.0.0"
+isort = "^5.13.2"
+pytest = "^8.2.0"
+
+[tool.black]
+line-length = 88
+
+[tool.isort]
+profile = "black"
